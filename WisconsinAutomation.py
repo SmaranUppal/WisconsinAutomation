@@ -29,6 +29,7 @@ COMPETITOR_NAMES: list[str] = [
     "J G Wentworth",
     "J. G. Wentworth",
     "DRB Capital",
+    "Peachtree Settlement",
     "Stone Street Capital",
     "AA Ron I",
     "Abactor",
@@ -100,7 +101,8 @@ COMPETITOR_NAMES: list[str] = [
     "Wepaymore Funding",
     "Zakho Way",
     "Great Plains Management",
-    "T ENE",
+    "T ENE LLC",
+    "T ENE, LLC",
     "RD FITZ",
     "GA OFF",
     "Assured Management",
@@ -158,7 +160,7 @@ LONG_BREAK_MAX              = 10
 
 WCCA_URL = "https://wcca.wicourts.gov/case.html"
 CUTOFF   = datetime.today() - timedelta(days=LOOKBACK_DAYS)
-COLUMNS  = ["Case Number", "Filing Date", "County", "Name", "Caption", "Search Term"]
+COLUMNS  = ["Case Number", "Filing Date", "County", "Caption", "Search Term"]
 DATE_FMT = "%m-%d-%Y"
 
 
@@ -177,7 +179,7 @@ def _init_workbook() -> None:
     ws.title = SHEET_NAME
     header_fill = PatternFill("solid", fgColor="1F4E79")
     header_font = Font(bold=True, color="FFFFFF", name="Arial", size=11)
-    col_widths   = [18, 14, 18, 30, 50, 22]
+    col_widths   = [18, 14, 18, 50, 22]
     for col_idx, (col_name, width) in enumerate(zip(COLUMNS, col_widths), start=1):
         cell = ws.cell(row=1, column=col_idx, value=col_name)
         cell.font      = header_font
@@ -294,7 +296,6 @@ async def _parse_detail_page(page, business_name: str) -> list[dict]:
         "Case Number": case_num,
         "Filing Date": filing_date,
         "County":      county,
-        "Name":        "",
         "Caption":     caption,
         "Search Term": business_name,
     })
@@ -407,10 +408,9 @@ async def search_business(page, business_name: str) -> tuple[list[dict], bool]:
     idx_case    = col("case number") if col("case number") is not None else col("case")
     idx_date    = col("filing date") if col("filing date") is not None else col("filing")
     idx_county  = col("county")
-    idx_name    = col("name")
     idx_caption = col("caption")
 
-    print(f"  [debug] Col indices — case:{idx_case} date:{idx_date} county:{idx_county} name:{idx_name} caption:{idx_caption}")
+    print(f"  [debug] Col indices — case:{idx_case} date:{idx_date} county:{idx_county} caption:{idx_caption}")
 
     rows = await page.query_selector_all("#caseSearchResults tbody tr")
     print(f"  [debug] {len(rows)} data row(s) found")
@@ -430,7 +430,6 @@ async def search_business(page, business_name: str) -> tuple[list[dict], bool]:
         case_num    = await get(idx_case)
         filing_date = await get(idx_date)
         county      = await get(idx_county)
-        name        = await get(idx_name)
         caption     = await get(idx_caption)
 
         if not case_num:
@@ -444,7 +443,6 @@ async def search_business(page, business_name: str) -> tuple[list[dict], bool]:
             "Case Number": case_num,
             "Filing Date": filing_date,
             "County":      county,
-            "Name":        name,
             "Caption":     caption,
             "Search Term": business_name,
         })
